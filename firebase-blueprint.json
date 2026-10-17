@@ -1,0 +1,318 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Taxpayer profile containing filing persona, annual income, and tax year settings.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The unique Firebase Auth UID of the taxpayer."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the taxpayer."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Taxpayer full legal name."
+        },
+        "persona": {
+          "type": "string",
+          "enum": ["individual", "business"],
+          "description": "Filing persona: Form BE individual or Form B business."
+        },
+        "activeTaxYear": {
+          "type": "number",
+          "description": "Active assessment tax year (e.g., 2026)."
+        },
+        "annualIncome": {
+          "type": "number",
+          "description": "Annual employment salary or estimated taxable income in MYR."
+        },
+        "businessTurnover": {
+          "type": "number",
+          "description": "Gross annual business revenue in MYR (for Form B)."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of account creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp of profile update."
+        }
+      },
+      "required": ["userId", "email", "persona", "activeTaxYear"]
+    },
+    "ReceiptRecord": {
+      "title": "ReceiptRecord",
+      "description": "An audit-verified Malaysian tax receipt or invoice preserved for 7-year retention.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Document ID."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the document owner."
+        },
+        "persona": {
+          "type": "string",
+          "enum": ["individual", "business"],
+          "description": "Whether receipt belongs to personal or business filing."
+        },
+        "merchantName": {
+          "type": "string",
+          "description": "Name of the merchant or vendor."
+        },
+        "ssmNumber": {
+          "type": "string",
+          "description": "Malaysian SSM business registration number."
+        },
+        "tinNumber": {
+          "type": "string",
+          "description": "LHDN Tax Identification Number."
+        },
+        "date": {
+          "type": "string",
+          "description": "Transaction date (YYYY-MM-DD)."
+        },
+        "taxYear": {
+          "type": "number",
+          "description": "Assessment tax year."
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "Gross invoice total amount in MYR."
+        },
+        "claimableAmount": {
+          "type": "number",
+          "description": "Approved tax-claimable amount in MYR."
+        },
+        "categoryId": {
+          "type": "string",
+          "description": "Relief or business expense category identifier."
+        },
+        "categoryName": {
+          "type": "string",
+          "description": "Human-readable category name."
+        },
+        "statutorySection": {
+          "type": "string",
+          "description": "Income Tax Act 1967 statutory section reference."
+        },
+        "verificationHash": {
+          "type": "string",
+          "description": "SHA-256 cryptographic fingerprint for anti-tamper & double-claim defense."
+        },
+        "isUserVerified": {
+          "type": "boolean",
+          "description": "Whether the taxpayer personally verified or adjusted this receipt."
+        },
+        "aiConfidence": {
+          "type": "number",
+          "description": "Confidence score from 0 to 100."
+        },
+        "retentionUntilYear": {
+          "type": "number",
+          "description": "Year until which document must be retained under Section 82A ITA 1967."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of upload."
+        }
+      },
+      "required": ["id", "userId", "merchantName", "date", "taxYear", "totalAmount", "claimableAmount", "verificationHash"]
+    },
+    "AuditPack": {
+      "title": "AuditPack",
+      "description": "Exported LHDN audit defense bundle package metadata.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Audit pack ID."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID."
+        },
+        "taxYear": {
+          "type": "number",
+          "description": "Assessment Year."
+        },
+        "persona": {
+          "type": "string",
+          "description": "Filing persona."
+        },
+        "totalDeductionClaimed": {
+          "type": "number",
+          "description": "Total sum of deductions in MYR."
+        },
+        "receiptsCount": {
+          "type": "number",
+          "description": "Number of audit proofs bundled."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["ready", "submitted"],
+          "description": "Status of the bundle."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp."
+        }
+      },
+      "required": ["id", "userId", "taxYear", "totalDeductionClaimed", "receiptsCount", "status", "createdAt"]
+    },
+    "GuestSession": {
+      "title": "GuestSession",
+      "description": "Daily rate limiting and scan/query counter per anonymous or guest session.",
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Unique session identifier."
+        },
+        "date": {
+          "type": "string",
+          "description": "Calendar date (YYYY-MM-DD)."
+        },
+        "scanCount": {
+          "type": "number",
+          "description": "Number of document scans performed today."
+        },
+        "copilotQueryCount": {
+          "type": "number",
+          "description": "Number of Copilot inquiries asked today."
+        },
+        "lastActive": {
+          "type": "string",
+          "description": "ISO timestamp of last activity."
+        }
+      },
+      "required": ["sessionId", "date", "scanCount", "copilotQueryCount"]
+    },
+    "UserFeedback": {
+      "title": "UserFeedback",
+      "description": "User ratings, feature requests, and bug reports.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique feedback ID."
+        },
+        "userId": {
+          "type": "string",
+          "description": "User ID or guest session."
+        },
+        "userEmail": {
+          "type": "string",
+          "description": "Taxpayer email."
+        },
+        "persona": {
+          "type": "string",
+          "description": "Individual or business persona."
+        },
+        "rating": {
+          "type": "number",
+          "description": "Star rating from 1 to 5."
+        },
+        "type": {
+          "type": "string",
+          "description": "Feedback type: bug_report, feature_request, tax_question, or general."
+        },
+        "category": {
+          "type": "string",
+          "description": "Feature category."
+        },
+        "message": {
+          "type": "string",
+          "description": "Feedback comments."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status: new, reviewed, resolved."
+        }
+      },
+      "required": ["id", "rating", "type", "category", "message", "createdAt", "status"]
+    },
+    "CrashLog": {
+      "title": "CrashLog",
+      "description": "Component-level runtime crash logs captured by ErrorBoundary.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique crash ID."
+        },
+        "errorMessage": {
+          "type": "string",
+          "description": "Error message."
+        },
+        "errorName": {
+          "type": "string",
+          "description": "Error class/name."
+        },
+        "componentStack": {
+          "type": "string",
+          "description": "Component stack trace."
+        },
+        "userId": {
+          "type": "string",
+          "description": "User ID."
+        },
+        "userEmail": {
+          "type": "string",
+          "description": "User email."
+        },
+        "url": {
+          "type": "string",
+          "description": "URL at time of crash."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp."
+        },
+        "resolvedStatus": {
+          "type": "string",
+          "description": "unresolved, investigating, fixed."
+        }
+      },
+      "required": ["id", "errorMessage", "createdAt", "resolvedStatus"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Private taxpayer profile and preferences."
+    },
+    "/users/{userId}/receipts/{receiptId}": {
+      "schema": "ReceiptRecord",
+      "description": "Audit-proof tax deduction receipts owned exclusively by the taxpayer."
+    },
+    "/users/{userId}/auditPacks/{packId}": {
+      "schema": "AuditPack",
+      "description": "Tax year audit defense ZIP packages."
+    },
+    "/guest_sessions/{sessionId}": {
+      "schema": "GuestSession",
+      "description": "Guest session rate-limit counters."
+    },
+    "/user_feedbacks/{feedbackId}": {
+      "schema": "UserFeedback",
+      "description": "Taxpayer feedback submissions."
+    },
+    "/system_crash_logs/{crashId}": {
+      "schema": "CrashLog",
+      "description": "Client-side error boundary crash reports."
+    }
+  }
+}
+

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      // Suppress and neutralize Vite HMR WebSocket connection errors in dev preview iframe environment
+      (function() {
+        if (typeof window !== 'undefined') {
+          if (window.WebSocket) {
+            var OriginalWebSocket = window.WebSocket;
+            window.WebSocket = function(url, protocols) {
+              var isViteHmr = (typeof protocols === 'string' && protocols.indexOf('vite-hmr') !== -1) ||
+                              (Array.isArray(protocols) && protocols.indexOf('vite-hmr') !== -1) ||
+                              (typeof url === 'string' && (url.indexOf('vite-hmr') !== -1 || url.indexOf('/@vite/client') !== -1));
+              if (isViteHmr) {
+                var dummy = new EventTarget();
+                dummy.send = function() {};
+                dummy.close = function() {};
+                dummy.readyState = 1;
+                dummy.url = url;
+                dummy.protocol = 'vite-hmr';
+                dummy.extensions = '';
+                dummy.bufferedAmount = 0;
+                dummy.binaryType = 'blob';
+                return dummy;
+              }
+              return new OriginalWebSocket(url, protocols);
+            };
+            window.WebSocket.prototype = OriginalWebSocket.prototype;
+            window.WebSocket.CONNECTING = OriginalWebSocket.CONNECTING;
+            window.WebSocket.OPEN = OriginalWebSocket.OPEN;
+            window.WebSocket.CLOSING = OriginalWebSocket.CLOSING;
+            window.WebSocket.CLOSED = OriginalWebSocket.CLOSED;
+          }
+
+          var origError = console.error;
+          console.error = function() {
+            var msg = Array.prototype.slice.call(arguments).map(function(a) {
+              return (a && a.message) || String(a);
+            }).join(' ');
+            if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('[vite]') !== -1) {
+              return;
+            }
+            return origError.apply(console, arguments);
+          };
+
+          var origWarn = console.warn;
+          console.warn = function() {
+            var msg = Array.prototype.slice.call(arguments).map(function(a) {
+              return (a && a.message) || String(a);
+            }).join(' ');
+            if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('[vite]') !== -1) {
+              return;
+            }
+            return origWarn.apply(console, arguments);
+          };
+
+          window.addEventListener('error', function(e) {
+            var msg = (e && (e.message || (e.error && e.error.message))) || '';
+            var file = (e && e.filename) || '';
+            if (msg.indexOf('WebSocket') !== -1 || file.indexOf('@vite/client') !== -1) {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              return true;
+            }
+          }, true);
+
+          window.addEventListener('unhandledrejection', function(e) {
+            var reason = (e && e.reason && (e.reason.message || String(e.reason))) || '';
+            if (reason.indexOf('WebSocket') !== -1 || reason.indexOf('@vite/client') !== -1) {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+            }
+          }, true);
+        }
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>CukaiSmart - Malaysia Tax Relief Optimiser</title>
+    <meta name="description" content="Production-grade PWA for Malaysian taxpayers, freelancers, and SMEs to maximize statutory tax reliefs under the Income Tax Act 1967, scan receipts with Gemini 3.8 Flash AI, optimize payday savings, and maintain 7-year audit records." />
+    <meta property="og:title" content="CukaiSmart - Malaysia Tax Relief Optimiser" />
+    <meta property="og:description" content="Production-grade PWA for Malaysian taxpayers, freelancers, and SMEs to maximize statutory tax reliefs under the Income Tax Act 1967, scan receipts with Gemini 3.8 Flash AI, optimize payday savings, and maintain 7-year audit records." />
+
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#065f46" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <!-- Google Fonts: Plus Jakarta Sans (Display/Body) & JetBrains Mono (Tabular/Metrics) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-slate-950 text-slate-100 antialiased selection:bg-emerald-500 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

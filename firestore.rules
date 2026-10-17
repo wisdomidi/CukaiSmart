@@ -1,0 +1,97 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'oweezyidi@gmail.com' ||
+        request.auth.token.email == 'admin@cukaismart.my' ||
+        request.auth.token.email.matches('.*@cukaismart\\.admin')
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.userId == userId
+        && data.email is string && data.email.size() > 3 && data.email.size() <= 256
+        && (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 128))
+        && data.persona in ['individual', 'business']
+        && data.activeTaxYear is int && data.activeTaxYear >= 2020 && data.activeTaxYear <= 2040
+        && (!('annualIncome' in data) || (data.annualIncome is number && data.annualIncome >= 0))
+        && (!('businessTurnover' in data) || (data.businessTurnover is number && data.businessTurnover >= 0));
+    }
+
+    function isValidReceipt(data, userId) {
+      return data.userId == userId
+        && data.merchantName is string && data.merchantName.size() > 0 && data.merchantName.size() <= 256
+        && data.totalAmount is number && data.totalAmount >= 0
+        && data.claimableAmount is number && data.claimableAmount >= 0
+        && data.verificationHash is string && data.verificationHash.size() == 64
+        && data.taxYear is int && data.taxYear >= 2020 && data.taxYear <= 2040;
+    }
+
+    // Taxpayer profile
+    match /users/{userId} {
+      allow get, list: if isOwner(userId) || isAdmin();
+      allow create: if (isOwner(userId) || isAdmin()) && isValidUserProfile(request.resource.data, userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isOwner(userId) || isAdmin();
+
+      // 7-Year Claimable Document Vault receipts
+      match /receipts/{receiptId} {
+        allow get, list: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidId(receiptId) && isValidReceipt(request.resource.data, userId);
+        allow update: if isOwner(userId) && isValidId(receiptId) && isValidReceipt(request.resource.data, userId);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      // Audit packs
+      match /auditPacks/{packId} {
+        allow get, list: if isOwner(userId) || isAdmin();
+        allow create, update: if (isOwner(userId) || isAdmin()) && isValidId(packId);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // System AI Monitoring & Accuracy Verification Logs
+    match /system_ai_logs/{logId} {
+      allow read: if isSignedIn() || isAdmin();
+      allow write: if isSignedIn() || isAdmin();
+    }
+
+    // Guest sessions for anonymous rate-limiting & quota tracking
+    match /guest_sessions/{sessionId} {
+      allow read, write: if true;
+    }
+
+    // Taxpayer User Feedback & Bug Reports
+    match /user_feedbacks/{feedbackId} {
+      allow create: if true;
+      allow read, list, update, delete: if isAdmin();
+    }
+
+    // Client-side Error Boundary Crash Logs
+    match /system_crash_logs/{crashId} {
+      allow create: if true;
+      allow read, list, update, delete: if isAdmin();
+    }
+
+    // Connection testing endpoint
+    match /test/{docId} {
+      allow read, write: if true;
+    }
+  }
+}
+

@@ -1,0 +1,7 @@
+{
+  "name": "CukaiSmart - Malaysia Tax Relief Optimiser",
+  "description": "Production-grade PWA for Malaysian taxpayers, freelancers, and SMEs to maximize statutory tax reliefs under the Income Tax Act 1967, scan receipts with Gemini 3.8 Flash AI, optimize payday savings, and maintain 7-year audit records.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
